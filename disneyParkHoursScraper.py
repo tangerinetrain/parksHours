@@ -23,7 +23,7 @@ except mariadb.Error as e:
     
 cur = conn.cursor()
 #Clears the hours table
-cur.execute("TRUNCATE hours;)
+cur.execute("TRUNCATE hours;")
 #Set the date variables and regex
 date = datetime.datetime.now()
 currMonthDays=monthrange(int(date.strftime("%Y")), int(date.strftime("%m")))
@@ -41,15 +41,18 @@ soup = BeautifulSoup(content)
 while i <= currMonthDays[1]:
     parkIterator = 0
     while parkIterator < len(parks):
-        header = date.strftime("%B") + date.strftime("%d") + " " + parks[parkIterator]
+        header = date.strftime("%B") + str(i) + " " + parks[parkIterator]
         header=header.lower()
+        print(header)
         parkHours=soup.find("div", headers=header).find("div", class_="parkHours").find('p')
         parkHours=timeRegex.findall(str(parkHours))
         openTimeHour=hourRegex.search(parkHours[0])
         closeTimeHour=hourRegex.search(parkHours[1])
+        print(str(closeTimeHour.group()))
         parkIterator += 1
         cur.execute("INSERT INTO hours (hourID, day, open_time, close_time, park_id) VALUES (" + str(id) + ", " + str(i) + ", " + str(openTimeHour.group()) + ", " + str(closeTimeHour.group()) + ", " + str(parkIterator) + " );")
         id += 1
+        #print("open: " + str(openTimeHour.group()) + " close: " + str(closeTimeHour.group()) + " park: " + str(parkIterator))
     i += 1
     print("Finished inserting " + date.strftime("%m") + "/" + str(i))
 conn.commit()
